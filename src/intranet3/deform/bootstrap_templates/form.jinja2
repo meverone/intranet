@@ -1,0 +1,57 @@
+    <fieldset>
+        {% if field.title %}
+            <legend>{{ _(field.title) }}</legend>
+        {% endif %}
+        <input type="hidden" name="_charset_"/>
+        <input type="hidden" name="__formid__" value="{{ field.formid }}"/>
+        {% if field.error %}
+            <div class="alert alert-block alert-error">
+                <h3 class="errorMsgLbl">{{ _("There was a problem with your submission") }}</h3>
+
+                <p class="errorMsg">{{ _("Errors have been highlighted below") }}</p>
+                {% if field.errormsg %}
+                    <p class="errorMsg">{{ field.errormsg }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% if field.description %}
+            <div>{{ _(field.description) }}</div>
+        {% endif %}
+        {% for f in field.children %}
+            {{ field.renderer(field.widget.item_template, field=f, cstruct=cstruct.get(f.name, null)) }}
+        {% endfor %}
+
+        <div class="form-actions">
+            {% for button in field.buttons %}
+                <button
+                        id="{{field.formid+button.name}}"
+                        name="{{button.name}}"
+                        type="{{button.type}}"
+                        class="btn {% if loop.first %}btn-primary{% endif %} {{button.css_class}}"
+                        value="{{ _(button.value) }}"
+                        {% if button.disabled %}
+                        disabled="disabled"
+                        {% endif %}>
+                    {{ _(button.title) }}
+                </button>
+            {% endfor %}
+        </div>
+    </fieldset>
+    {% if field.use_ajax %}
+        <script type="text/javascript">
+            deform.addCallback(
+                    '{{field.formid}}',
+                    function (oid) {
+                        var options = {
+                            target:'#' + oid,
+                            replaceTarget:true,
+                            success:function () {
+                                deform.processCallbacks();
+                                deform.focusFirstInput();
+                            }
+                        };
+                        var extra_options = {{ field.ajax_options }} || {};
+                        $('#' + oid).ajaxForm($.extend(options, extra_options));
+                    });
+        </script>
+    {% endif %}

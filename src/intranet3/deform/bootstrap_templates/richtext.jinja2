@@ -1,0 +1,34 @@
+<textarea id="{{ field.oid }}" name="{{ field.name }}">{{ cstruct }}</textarea>
+<span id="{{ field.oid }}-preload" class="tinymce-preload">{{ cstruct }}</span>
+<script type="text/javascript">
+    (function ($) {
+        deform.addCallback('{{ field.oid }}', function (oid) {
+            var jqoid = $('#' + oid);
+            var jqoid_preload = $('#' + oid + '-preload');
+            jqoid.hide();
+            jqoid_preload.click(function () {
+                jqoid.show();
+                jqoid_preload.remove();
+                tinyMCE.init({
+                    mode:'exact',
+                    elements:oid,
+                    strict_loading_mode:true,
+                    height:'{{ field.widget.height }}',
+                    width:'{{ field.widget.width }}',
+                    skin:'{{ field.widget.skin }}',
+                    theme:'{{ field.widget.theme }}',
+                    theme_advanced_resizing:true,
+                    theme_advanced_toolbar_align:'left',
+                    theme_advanced_toolbar_location:'top'
+                });
+                jqoid_preload.unbind('click');
+            });
+            {% if not field.widget.delayed_load %}
+                jqoid_preload.click();
+            {% endif %}
+        });
+        $('#{{ field.oid }}').closest("form").bind('form-pre-serialize', function (event) {
+            tinyMCE.triggerSave();
+        });
+    })(jQuery);
+</script>

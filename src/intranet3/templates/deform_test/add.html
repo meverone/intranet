@@ -1,0 +1,46 @@
+{% extends "templates/_base.html" %}
+
+{% block head_script %}
+    <script src="{{ request.static_path('intranet3:static/js/vendor/organictabs.js') }}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="tickets_report">
+
+    <div class="tabs">
+        <ul class="nav nav-tabs">
+            <li class="title">{% trans %}Time entries{% endtrans %}</li>
+            <li>
+                <div class="">
+                    <a class="button btn btn-success alt-submit" href="#">{% trans %}Download Excel{% endtrans %}</a>
+                    <img class="ajax-loader" title="{% trans %}Bug titles loading{% endtrans %}" src="/static/img/ajax.gif"/>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div id="raport-form">
+            <form action=""
+              method="GET"
+              data-alt_method="GET"
+              accept-charset="utf-8"
+              class="{% if request.is_user_in_group('client') %}client{% endif %} form-horizontal">
+                {{ form|safe }}
+            </form>
+        </div>
+
+        <div class="tabs-container">
+        {% include 'templates/times/tickets/_time_list.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block tail_script %}
+    <script type="text/javascript">
+        $('.jq-multisel').multiselect({noneSelectedText: ''}).multiselectfilter({placeholder: ''});
+    </script>
+{% endblock %}
