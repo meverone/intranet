@@ -15,6 +15,8 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.security import Allow, ALL_PERMISSIONS
 from werkzeug.contrib.cache import MemcachedCache
 
+from intranet3.utils.memcache import DummyMemcache
+
 from twisted.web.wsgi import WSGIResource
 from twisted.internet import reactor
 from twisted.web import server
@@ -46,7 +48,7 @@ class Root(object):
         self.request = request
 
 config = None
-memcache = None
+memcache = DummyMemcache()
 
 
 def main(global_config, **settings):

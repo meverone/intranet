@@ -1,0 +1,62 @@
+# coding: utf-8
+import sys
+
+""" Temporary solution """
+sys.path[0:0] = [
+    '/home/meverone/intranet/src',
+    '/home/meverone/intranet/eggs/nose-1.3.0-py2.7.egg',
+    '/home/meverone/intranet/eggs/Markdown-2.3.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/mock-1.0.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/WebTest-2.0.7-py2.7.egg',
+    '/home/meverone/intranet/eggs/Babel-1.3-py2.7.egg',
+    '/home/meverone/intranet/eggs/Werkzeug-0.9.3-py2.7.egg',
+    '/home/meverone/intranet/eggs/google_api_python_client-1.2-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_ldap-0.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/Paste-1.7.5.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/distribute-0.6.49-py2.7.egg',
+    '/home/meverone/intranet/eggs/certifi-0.0.8-py2.7.egg',
+    '/home/meverone/intranet/eggs/requests-0.14.2-py2.7.egg',
+    '/home/meverone/intranet/eggs/PIL-1.1.7-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/xlwt-0.7.4-py2.7.egg',
+    '/home/meverone/intranet/eggs/python_dateutil-1.5-py2.7.egg',
+    '/home/meverone/intranet/eggs/twisted.scheduling-1.0-py2.7.egg',
+    '/usr/lib/python2.7/dist-packages',
+    '/home/meverone/intranet/eggs/Twisted-11.0.0-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/python_memcached-1.47-py2.7.egg',
+    '/home/meverone/intranet/eggs/ordereddict-1.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/gdata-2.0.17-py2.7.egg',
+    '/home/meverone/intranet/eggs/WTForms-1.0.4-py2.7.egg',
+    '/home/meverone/intranet/eggs/psycopg2-2.5.1-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/waitress-0.8.6-py2.7.egg',
+    '/home/meverone/intranet/eggs/zope.sqlalchemy-0.7.2-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_exclog-0.7-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_autoroute-0.1.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_jinja2-1.6-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_beaker-0.8-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_debugtoolbar-1.0.6-py2.7.egg',
+    '/home/meverone/intranet/eggs/pyramid_tm-0.7-py2.7.egg',
+    '/home/meverone/intranet/eggs/transaction-1.4.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/SQLAlchemy-0.8.2-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/pyramid-1.4.3-py2.7.egg',
+    '/home/meverone/intranet/eggs/beautifulsoup4-4.2.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/WebOb-1.2.3-py2.7.egg',
+    '/home/meverone/intranet/eggs/pytz-2013b-py2.7.egg',
+    '/home/meverone/intranet/eggs/httplib2-0.8-py2.7.egg',
+    '/home/meverone/intranet/eggs/python_ldap-2.4.13-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/ldappool-1.0-py2.7.egg',
+    '/home/meverone/intranet/eggs/zope.interface-4.0.5-py2.7-linux-x86_64.egg',
+    '/home/meverone/intranet/eggs/Jinja2-2.7.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/Beaker-1.6.4-py2.7.egg',
+    '/home/meverone/intranet/eggs/Pygments-1.6-py2.7.egg',
+    '/home/meverone/intranet/eggs/PasteDeploy-1.5.0-py2.7.egg',
+    '/home/meverone/intranet/eggs/translationstring-1.1-py2.7.egg',
+    '/home/meverone/intranet/eggs/venusian-1.0a8-py2.7.egg',
+    '/home/meverone/intranet/eggs/zope.deprecation-4.0.2-py2.7.egg',
+    '/home/meverone/intranet/eggs/repoze.lru-0.6-py2.7.egg',
+    '/home/meverone/intranet/eggs/Chameleon-2.11-py2.7.egg',
+    ]
+
+if __name__ == '__main__':
+    import nose
+
+    nose.main(argv=['nose', '-v'] + sys.argv[1:])

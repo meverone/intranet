@@ -48,7 +48,7 @@ class TimeCollection(GetTimeEntriesMixin, ApiView):
                 raise HTTPForbidden()
 
         if self.request.method == "GET":
-            if user.freelancer and not is_same_user:
+            if self.request.user.freelancer and not is_same_user:
                 raise HTTPForbidden()
 
     def _get_params(self):
