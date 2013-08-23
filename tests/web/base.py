@@ -1,5 +1,6 @@
 # coding: utf-8
 import unittest
+import transaction
 
 from os.path import dirname, join
 
@@ -27,18 +28,18 @@ class ApiBaseTest(unittest.TestCase):
     def setUpClass(cls):
         cls.app = application
         cls.session = DBSession()
-        Base.metadata.create_all()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.session.close()
-        Base.metadata.drop_all()
 
     def setUp(self):
         self.app = TestApp(self.app)
         self.config = testing.setUp()
-        Base.metadata.create_all()
-     
+
+    def tearDown(self):
+        # Truncate tables
+        for table in reversed(Base.metadata.sorted_tables):
+            self.session.execute(table.delete())
+            if table.name != "tracker_credentials":  # reset sequence
+                self.session.execute("ALTER SEQUENCE %s_id_seq RESTART WITH 1;" % table)
+
     def login(self, name, email):
         with patch("intranet3.views.auth.requests.get") as get:
             get.return_value = mock_get(name, email)

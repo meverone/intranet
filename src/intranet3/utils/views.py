@@ -4,6 +4,7 @@ import json
 
 from pyramid.httpexceptions import HTTPException, HTTPBadRequest, HTTPForbidden, HTTPMethodNotAllowed, HTTPNotFound 
 from pyramid.i18n import TranslationStringFactory, get_localizer
+from pyramid.response import Response
 
 from intranet3 import models
 from intranet3.log import INFO_LOG
@@ -84,6 +85,7 @@ class BaseView(View):
 class ApiView(BaseView):
 
     http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']
+    unsafe_methods = ['post', 'put']  # 'Delete' too.
 
     def __init__(self, context, request):
         def _response_exception(request, response):
@@ -103,9 +105,16 @@ class ApiView(BaseView):
 
         self.flash = lambda message, klass='': None # We don't need flash messages. So do nothing
 
-    def dispatch(self):       
-        if self.request.method.lower() in self.http_method_names:
-            handler = getattr(self, self.request.method.lower(), self.http_not_allowed_method)
+    def dispatch(self):
+        method = self.request.method.lower() 
+        if method in self.http_method_names:
+            if method in self.unsafe_methods:
+                try:
+                    self.request.json_body
+                except ValueError:
+                    raise HTTPBadRequest("Except JSON")
+
+            handler = getattr(self, method, self.http_not_allowed_method)
         else:
             handler = self.http_not_allowed_method
 
@@ -114,6 +123,14 @@ class ApiView(BaseView):
     def http_not_allowed_method(self):
         raise HTTPMethodNotAllowed("Method Not Allowed")
 
+    def options(self, request):
+        """
+            Handler method for HTTP 'OPTIONS' request.
+        """
+        return Response(
+            allow=', '.join([m.upper() for m in self.http_method_names if hasattr(self, m)]),
+            content_length=0,
+        )
 
 class CronView(View):
     def __call__(self):

@@ -84,7 +84,7 @@ class TimeCollection(GetTimeEntriesMixin, ApiView):
 
         try:
             schema = AddEntrySchema()
-            data = schema.deserialize(self.request.POST)
+            data = schema.deserialize(self.request.json_body)
         except colander.Invalid as e:
             return HTTPBadRequest(e.asdict())
 
@@ -128,11 +128,11 @@ class Time(ApiView):
             return
 
         if self.request.method in ("PUT", "DELETE"):
-            if not user_can_modify_timeentry(self.request.user, timeentry.date):
+            if not is_same_user:
+                raise HTTPBadRequest()
+            elif not user_can_modify_timeentry(self.request.user, timeentry.date):
                 raise HTTPForbidden()
             elif timeentry.deleted:
-                raise HTTPBadRequest()
-            elif not is_same_user:
                 raise HTTPBadRequest()
 
         if self.request.method == "GET":
@@ -158,7 +158,7 @@ class Time(ApiView):
 
         try:
             schema = EditEntrySchema()
-            data = schema.deserialize(self.request.POST)
+            data = schema.deserialize(self.request.json_body)
         except colander.Invalid as e:
             return HTTPBadRequest(e.asdict())
 
@@ -197,4 +197,4 @@ class Time(ApiView):
             timeentry.deleted = True
             timeentry.modified_ts = datetime.datetime.now()
 
-        return HTTPNoContent("Deleted")
+        return HTTPOk("Deleted")

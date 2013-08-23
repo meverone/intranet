@@ -9,10 +9,12 @@ class FactoryMixin(object):
     pid = 1 # Project
     tid = 1 # Tracker
 
-    def create_user(self, is_freelancer=False, domain="stxnext.pl", groups=[]):
+    def create_user(self, name="", is_freelancer=False, domain="stxnext.pl", groups=[]):
+        username = name or "user_%s" % self.uid
+        
         user = models.User(
-            email="user_%s@%s" % (self.uid, domain),
-            name="user_%s" % self.uid,
+            email="%s@%s" % (username, domain),
+            name=username,
             location="wroclaw",
             refresh_token='test_token',
             freelancer=is_freelancer
@@ -22,7 +24,8 @@ class FactoryMixin(object):
         self.session.add(user)
         self.session.flush()
 
-        FactoryMixin.uid += 1
+        if name == "":
+            self.uid += 1
 
         return user
 
@@ -40,7 +43,7 @@ class FactoryMixin(object):
         self.session.add(client)
         self.session.flush()
 
-        FactoryMixin.cid += 1
+        self.cid += 1
 
         return client
 
@@ -55,7 +58,7 @@ class FactoryMixin(object):
         self.session.add(tracker)
         self.session.flush()
 
-        FactoryMixin.tid += 1
+        self.tid += 1
 
         return tracker
 
@@ -76,6 +79,6 @@ class FactoryMixin(object):
         self.session.add(project)
         self.session.flush()
 
-        FactoryMixin.pid += 1
+        self.pid += 1
 
         return project
