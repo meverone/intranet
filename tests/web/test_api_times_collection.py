@@ -275,3 +275,14 @@ class ApiTimeCollectionTestCase(FactoryMixin, ApiBaseTest):
             expect_errors=True
         )
         self.assertEqual(response.status_int, 201)
+
+        # Check values
+        response = self.app.get(
+            '/api/times',
+            extra_environ=self.request,
+            expect_errors=True
+        )
+
+        entries = response.json['entries']
+        for entry in entries:
+            self.assertIn(entry['time'], [2.5, 2.6, 1.36666666666667])

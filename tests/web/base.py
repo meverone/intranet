@@ -33,7 +33,6 @@ class ApiBaseTest(unittest.TestCase):
         self.app = TestApp(self.app)
         self.config = testing.setUp()
 
-    def tearDown(self):
         # Truncate tables
         for table in reversed(Base.metadata.sorted_tables):
             self.session.execute(table.delete())
