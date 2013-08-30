@@ -1,0 +1,73 @@
+<div id="bug_table">
+    <div class="my-bugs">
+        <ul class="nav nav-tabs">
+            <li class="title">My bugs</li>
+            <li ng-class="{active: resolved}"><a ng-click="getResolved(1)">Show resolved</a></li>
+            <li ng-class="{active: !resolved}"><a ng-click="getResolved(0)">Show unresolved</a></li>
+            <li><img ng-show="isLoading" class="ajax-loader" title="Loading new bugs" src="/static/img/ajax.gif"/></li>
+        </ul>
+        <div id="bug_table">
+
+            <table class="table table-bordered table-hover bug-list">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Reporter</th>
+                    <th>Assignee</th>
+                    <th>Project</th>
+                    <th>Component</th>
+                    <th>Priority / status</th>
+                    <th class="dependson">Depends on</th>
+                    <th>Blocks</th>
+                    <th>Reported date</th>
+                    <th>Modified date</th>
+                    <th>Deadline</th>
+                    <th>Project</th>
+                    <th>Hours</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="bug in bugs">
+                    <td>{{ $index + 1 }}</td>
+                    <td><a href="{{ bug.url }}" class="external" target="_self">{{ bug.id }}</a></td>
+                    <td>{{ bug.desc }}</td>
+                    <td>{{ bug.raporter_name }}</td>
+                    <td>{{ bug.owner_name }}</td>
+                    <td>{{ bug.project_name }}</td>
+                    <td>{{ bug.component_name }}</td>
+                    <td data-sort="{{ bug.severity_number }}">
+                        <span class="priority priority_{{ bug.severity_number }}">{{ bug.severity }}</span>
+                        <div style="clear: both;">({{ bug.status }})</div>
+                    </td>
+                    <td>
+                        <a href="" ng-repeat="(bug_id, value) in bug.dependson" class="external" ngclass="{close: value.resolved}" title="{{ value.desc }}">
+                            {{ bug_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="" ng-repeat="(bug_id, value) in bug.blocked" class="external" ngclass="{close: value.resolved}" title="{{ value.desc }}">
+                            {{ bug.id }}
+                        </a>
+                    </td>
+                    <td>{{ bug.opendate }}</td>
+                    <td>{{ bug.changeddate }}</td>
+                    <td>{{ bug.deadline }}</td>
+                    <td>
+                        <span ng-show="bug.project">{{ bug.project.client_name }} / {{ bug.project_name }}</span>
+                    </td>
+                    <td>
+                        <a ng-show="bug.project" href="/times/list_bug?project_id={{ bug.project.id }}&bug_id={{ bug.id }}">
+                            {{ bug.time }}
+                        </a>
+                        <span ng-show="!bug.project">{{ bug.time }}</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+
+        </div>
+    </div>
+</div>

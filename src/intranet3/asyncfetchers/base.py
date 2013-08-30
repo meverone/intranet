@@ -92,6 +92,7 @@ class Bug(object):
             'time': self.time,
             'desc': self.desc,
             'severity': self.severity,
+            'status': self.status,
             'severity_number': self.severity_number,
             'project_name': self.project_name,
             'component_name': self.component_name,

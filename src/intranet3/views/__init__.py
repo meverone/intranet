@@ -8,3 +8,4 @@ def root(request):
     else:
         location = request.url_for('/bugs/my')
     return HTTPFound(location=location)
+

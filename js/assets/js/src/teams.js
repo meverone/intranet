@@ -1,4 +1,8 @@
-var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap']);
+var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap'], function($routeProvider, $locationProvider) {
+  $locationProvider.html5Mode(true);
+  $locationProvider.hashPrefix('');
+});
+
 $.fn.hasScrollBar = function() {
   return this.get(0).scrollHeight > this.height();
 };
@@ -141,3 +145,29 @@ App.controller('teamCtrl', function($scope, $http, $timeout, dialog, $callerScop
   return false;
 
 });
+
+App.controller('MyBugsCtrl', function($scope, $http, $location, $routeParams) {
+  console.log('work');
+  $scope.bugs = [];
+  $scope.resolved = 0;
+  $scope.isLoading = false;
+
+  $scope.getResolved = function(resolved) {
+    $scope.bugs = []; // Clear
+    $scope.resolved = resolved;
+    $scope.isLoading = true;
+
+    $http.get('/api/bugs?resolved='+ $scope.resolved).success(function(data){
+      $scope.bugs = data.bugs;
+      $scope.isLoading = false;
+    });
+
+    $location.search({'resolved': $scope.resolved});
+
+  }
+
+  // Init
+  $scope.getResolved(0);
+
+});
+
