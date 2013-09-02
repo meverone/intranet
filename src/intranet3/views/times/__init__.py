@@ -50,7 +50,6 @@ class List(GetTimeEntriesMixin, BaseView):
 
         entries = self._get_time_entries(date)
 
-        total_sum = sum(entry.time for (tracker, entry) in entries if not entry.deleted)
         form = TimeEntryForm()
 
         needs_justification = False
@@ -61,8 +60,6 @@ class List(GetTimeEntriesMixin, BaseView):
         return dict(
             date=date, entries=entries, form=form,
             user=self.request.user,
-            prev_date=previous_day(date), next_date=next_day(date),
-            total_sum=total_sum,
             needs_justification=needs_justification,
             justification_status=excuses.wrongtime_status(date, self.request.user.id),
             can_modify=user_can_modify_timeentry(self.request.user, date),

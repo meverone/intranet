@@ -1,6 +1,7 @@
-var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap']);
+var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap', 'ui.date']);
+
 $.fn.hasScrollBar = function() {
-  return this.get(0).scrollHeight > this.height();
+  return $scope.entriesDate.get(0).scrollHeight > $scope.entriesDate.height();
 };
 var resetScrolls = function(){
   var teams = $('.team-box ul'),
@@ -140,4 +141,156 @@ App.controller('teamCtrl', function($scope, $http, $timeout, dialog, $callerScop
 
   return false;
 
+});
+
+App.filter('format_time', function () {
+    return function (text, length, end) {
+      var result = ((parseFloat(text) * 60) / 60);
+      var hours = Math.floor(result);
+      var floatingPointPart = (result - hours);
+      var minutes =  Math.round(floatingPointPart.toFixed(2) * 60);
+      if (minutes == 0) {
+        minutes = "00";
+      }
+      return hours + ":" + minutes;
+    };
+});
+
+App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $timeout){
+  ( function() {
+    
+    function pad(number) {
+      var r = String(number);
+      if ( r.length === 1 ) {
+        r = '0' + r;
+      }
+      return r;
+    }
+ 
+    Date.prototype._toISOString = function() {
+      return this.getUTCFullYear()
+        + '-' + pad( this.getUTCMonth() + 1 )
+        + '-' + pad( this.getDate() )
+        + 'T' + pad( this.getUTCHours() )
+        + ':' + pad( this.getUTCMinutes() )
+        + ':' + pad( this.getUTCSeconds() )
+        + '.' + String( (this.getUTCMilliseconds()/1000).toFixed(3) ).slice( 2, 5 )
+        + 'Z';
+    };
+  
+  }() );
+
+  $scope.entries = [];
+  $scope.total_time = 0;
+  $scope.entriesDate = new Date();
+  $scope.needs_justification = false;
+  $scope.can_modify = true;
+  $scope.dateOptions = {
+      changeMonth: true,
+      yearRange: '1900:-0',
+      dateFormat: 'dd.mm.yy',
+      showOn: "button",
+      buttonImageOnly: true,
+      buttonImage: "/static/img/calendar.gif",
+  };
+  $scope.ticketTypes = [
+    {"value": "M0", "desc": "Ticket ID"},
+    {"value": "M1", "desc": "Daily Standup"},
+    {"value": "M2", "desc": "Planning meeting"},
+    {"value": "M3", "desc": "Review meeting"},
+    {"value": "M4", "desc": "Retrospective meeting"}
+  ];
+
+  if($location.search().date){
+    $scope.entriesDate = Date.parseExact($location.search().date, "d.M.yyyy");
+  }
+  $scope.modelDate = $scope.entriesDate.toString("dd.MM.yyyy");
+
+
+  $scope.$watch('ticket_type',function(newValue, oldValue){
+      
+    console.log(newValue);
+  });
+
+  $scope.getEntries = function() {
+    $http.get('/api/times?date=' + $scope.entriesDate._toISOString()).success(function(data){
+      $scope.can_modify = data.can_modify;
+      $scope.entries = data.entries;
+      $scope.handlerEntriesData();
+    });
+  };
+  $scope.getEntries($scope.entriesDate);
+  
+  $scope.handlerEntriesData = function(){
+    $scope.total_time = 0;
+    $scope.needs_justification = false;
+    _.each($scope.entries, function(entry){
+      if(Date.parseExact(entry.modified, "d.M.yyyy") > Date.parseExact(entry.date, "d.M.yyyy")){
+        $scope.needs_justification = true;
+      }
+      $scope.total_time += entry.time;
+    });
+  };
+ 
+  $scope.changeDateHandler =function(modelDate){
+    $scope.entriesDate = Date.parseExact(modelDate, "d.M.yyyy");
+    $location.search('date', $scope.entriesDate.toString('dd.MM.yyyy'));
+    // Update Table
+    $scope.getEntries();
+  };
+
+  $scope.nextDate = function() {
+     $scope.entriesDate = $scope.entriesDate.add({days: 1});
+      $location.search('date', $scope.entriesDate.toString('dd.MM.yyyy'));
+    
+    $scope.getEntries();
+  };
+
+  $scope.previousDate = function() {
+    $scope.entriesDate.add({days: -1});
+    $location.search('date', $scope.entriesDate.toString('dd.MM.yyyy'));
+    
+    $scope.getEntries();
+  };
+  
+  $scope.openEdit = function(id){
+    $scope.projects = [];
+
+    var entry = _.find($scope.entries, function(entry){ return entry.id == id;});
+    entry.dirty = true;
+
+    $http.get('/api/projects').success(function(data){
+      $scope.projects = data.projects;
+    });
+  };
+
+  $scope.submitEdit = function(id){
+   var entry = _.find($scope.entries, function(entry){ return entry.id == id;});
+
+    $http.put('/api/times/' + entry.id, {
+      project_id: entry.project.project_id,
+      ticket_id: entry.ticket_id,
+      time: entry.time,
+      description: entry.desc
+    }).success(function(data){
+      // Edit data
+      var project = _.find($scope.projects, function(project){ return project.id == entry.project.project_id; });
+      entry.project.client_name = project.client_name;
+      entry.project.project_name = project.name;
+      entry.dirty = false;
+    });
+  };
+
+  $scope.closeEdit = function(id){
+    var entry = _.find($scope.entries, function(entry){ return entry.id == id;});
+    entry.dirty = false;
+  };
+
+  $scope.delete = function(idx){
+    var entryToDelete = $scope.entries[idx];
+    $http.delete('/api/times/' + entryToDelete.id).success(function(){
+      $scope.entries.splice(idx, 1);
+      $scope.handlerEntriesData();
+    });
+  };
 });

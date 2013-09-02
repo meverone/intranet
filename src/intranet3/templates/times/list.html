@@ -6,11 +6,6 @@
     </script>
     <script>
         $(function(){
-            $('#datepicker').datepicker({
-                onSelect: function(dateText, inst) {
-                    window.location = '{{ request.url_for("/times/list") }}?date=' + inst.selectedDay + '.' + (inst.selectedMonth + 1) + '.' + inst.selectedYear;
-                }
-            });
             var $add_entry_to_one_of_your_own_bugs = $('#add-entry-to-one-of-your-own-bugs')
             if($add_entry_to_one_of_your_own_bugs.length > 0){
                 $add_entry_to_one_of_your_own_bugs.load('{{ request.url_for("/times/add_entry_to_one_of_your_bugs", date=date.strftime("%d.%m.%Y")) }}');
@@ -20,16 +15,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="tabs">
-        <ul class="nav nav-tabs">
-            <li class="title">{% trans date=date.strftime('%d.%m.%Y') %}Timesheet for {{ date }}{% endtrans %}</li>
-        </ul>
-    </div>
-    <ul class="pager float_left">
-        <li><a href="{{ request.url_for('/times/list', date=prev_date.strftime('%d.%m.%Y')) }}">{% trans %}Previous day{% endtrans %}</a></li>
-        <li><input type="hidden" id="datepicker" value="{{ date.strftime('%m/%d/%Y') }}"/></li>
-        <li><a href="{{ request.url_for('/times/list', date=next_date.strftime('%d.%m.%Y')) }}">{% trans %}Next day{% endtrans %}</a></li>
-    </ul>
+    <div ng-app="intranet" ng-controller="TimeListCtrl" ng-include="src='time_entries_list.html'">
     {% if user.id == request.user.id and needs_justification %}
     <div class="float_left btn_margin_top frame_times justification-info">
             {% if justification_status == None %}
@@ -43,7 +29,8 @@
             {% endif %}
     </div>
     {% endif %}
-    {% include "times/_list.html" %}
+        {# include "times/_list.html" #}
+    </div>
 
     {% if can_modify %}
         <div class="time-entrie-forms row-fluid">

@@ -32,6 +32,7 @@ class TimeEntry(Base):
     def to_dict(self):
         entry = {
             'id': self.id,
+            'date': self.date.strftime("%d.%m.%Y"),
             'desc': self.description,
             'added': self.added_ts.strftime("%d.%m.%Y"),
             'modified': self.modified_ts.strftime("%d.%m.%Y"),
@@ -43,6 +44,7 @@ class TimeEntry(Base):
         if self.project:
             entry.update({
                 'project': {
+                    'project_id': self.project_id,
                     'client_name': self.project.client.name,
                     'project_name': self.project.name,
                 }

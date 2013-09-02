@@ -76,6 +76,7 @@ class TimeCollection(GetTimeEntriesMixin, ApiView):
         entries = self._get_time_entries(date, user.id)
 
         return {
+            'can_modify': user_can_modify_timeentry(self.request.user, date),
             'entries': self._entries_serializer(entries)
         }
 
@@ -84,7 +85,7 @@ class TimeCollection(GetTimeEntriesMixin, ApiView):
 
         try:
             schema = AddEntrySchema()
-            data = schema.deserialize(self.request.POST)
+            data = schema.deserialize(self.request.json_body)
         except colander.Invalid as e:
             return HTTPBadRequest(e.asdict())
 
@@ -158,7 +159,7 @@ class Time(ApiView):
 
         try:
             schema = EditEntrySchema()
-            data = schema.deserialize(self.request.POST)
+            data = schema.deserialize(self.request.json_body)
         except colander.Invalid as e:
             return HTTPBadRequest(e.asdict())
 
