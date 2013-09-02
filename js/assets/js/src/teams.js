@@ -1,7 +1,7 @@
 var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap', 'ui.date']);
 
 $.fn.hasScrollBar = function() {
-  return $scope.entriesDate.get(0).scrollHeight > $scope.entriesDate.height();
+  return this.get(0).scrollHeight > this.height();
 };
 var resetScrolls = function(){
   var teams = $('.team-box ul'),
