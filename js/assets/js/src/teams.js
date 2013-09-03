@@ -1,4 +1,6 @@
-var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap', 'ui.date']);
+var App = angular.module('intranet', ['ngDragDrop', 'ui.bootstrap', 'ui.date'], function($locationProvider){
+  $locationProvider.html5Mode(true);
+});
 
 $.fn.hasScrollBar = function() {
   return this.get(0).scrollHeight > this.height();
@@ -149,14 +151,79 @@ App.filter('format_time', function () {
       var hours = Math.floor(result);
       var floatingPointPart = (result - hours);
       var minutes =  Math.round(floatingPointPart.toFixed(2) * 60);
-      if (minutes == 0) {
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      } else if (minutes === 0) {
         minutes = "00";
       }
       return hours + ":" + minutes;
     };
 });
 
-App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $timeout){
+App.directive('watchchanges', function() {
+    return function (scope, element, attrs) {
+      var parent = element.closest('.parent');
+      var ticket_id = parent.find('.ticket_id');
+      var ticket_desc = parent.find('.ticket_desc');
+
+      element.on('change', function(){
+        var type = scope.ticketTypes[element.val()];
+
+        if(type.value !== "M0"){
+            ticket_id.val(type.value);
+            ticket_id.prop('readonly', true);
+            ticket_desc.val(type.desc);
+        } else {
+            ticket_id.val('');
+            ticket_id.prop('readonly', false);
+            ticket_desc.val('');
+        }
+
+        // Angular should know about changes
+        scope.$apply(function () {
+          if( attrs.id ) {
+            var entry = _.find(scope.entries, function(entry){ return entry.id == attrs.id;});
+            entry.ticket_id = ticket_id.val();
+            entry.desc = ticket_desc.val();
+          }else {
+            scope.data.ticket_id = ticket_id.val();
+            scope.data.time_desc = ticket_desc.val();
+          }
+        });
+      });
+    };
+  });
+
+App.factory('entriesData', function($rootScope){
+  data = [];
+  attrs = {};
+
+  return {
+      attrs: {},
+      getData: function() {
+        return data;
+      },
+      getAttrs: function() {
+        return attrs;
+      },
+      mergeData: function(newData, boardcast){
+        data.push(newData);
+        if(boardcast){
+          $rootScope.$broadcast("handleNewData");
+        }
+        return data;
+      },
+      mergeAttrs: function(newAttrs){
+        return angular.extend(attrs, newAttrs);
+      },
+      reset: function(sure){
+        data = [];
+        attrs = {};
+      }
+  };
+});
+
+App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, entriesData){
   ( function() {
     
     function pad(number) {
@@ -180,14 +247,14 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $time
   
   }() );
 
-  $scope.entries = [];
+  $scope.entries = entriesData.getData();
   $scope.total_time = 0;
   $scope.entriesDate = new Date();
   $scope.needs_justification = false;
   $scope.can_modify = true;
   $scope.dateOptions = {
       changeMonth: true,
-      yearRange: '1900:-0',
+      yearRange: '2000:-0',
       dateFormat: 'dd.mm.yy',
       showOn: "button",
       buttonImageOnly: true,
@@ -201,34 +268,47 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $time
     {"value": "M4", "desc": "Retrospective meeting"}
   ];
 
+  $scope.$on("handleNewData", function(){
+    $scope.entries = entriesData.getData();
+    $scope.handlerEntriesData();
+    console.log('update');
+  });
+
   if($location.search().date){
     $scope.entriesDate = Date.parseExact($location.search().date, "d.M.yyyy");
   }
   $scope.modelDate = $scope.entriesDate.toString("dd.MM.yyyy");
 
-
-  $scope.$watch('ticket_type',function(newValue, oldValue){
-      
-    console.log(newValue);
-  });
-
   $scope.getEntries = function() {
+    entriesData.reset();
     $http.get('/api/times?date=' + $scope.entriesDate._toISOString()).success(function(data){
       $scope.can_modify = data.can_modify;
       $scope.entries = data.entries;
       $scope.handlerEntriesData();
+
+      // Add Data to factory
+      _.each($scope.entries, function(entry){
+        entriesData.mergeData(entry, false);
+      });
+      entriesData.mergeAttrs({can_modify: data.can_modify});
     });
   };
   $scope.getEntries($scope.entriesDate);
-  
+ 
   $scope.handlerEntriesData = function(){
     $scope.total_time = 0;
     $scope.needs_justification = false;
     _.each($scope.entries, function(entry){
-      if(Date.parseExact(entry.modified, "d.M.yyyy") > Date.parseExact(entry.date, "d.M.yyyy")){
-        $scope.needs_justification = true;
-      }
-      $scope.total_time += entry.time;
+        if(_.any($scope.ticketTypes, function(v){ return v.value === entry.ticket_id; })){
+            entry.ticket_type = entry.ticket_id;
+        }else{
+            entry.ticket_type = "M0";
+        }
+
+        if(Date.parseExact(entry.modified, "d.M.yyyy") > Date.parseExact(entry.date, "d.M.yyyy")){
+          $scope.needs_justification = true;
+        }
+        $scope.total_time += entry.time;
     });
   };
  
@@ -240,8 +320,8 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $time
   };
 
   $scope.nextDate = function() {
-     $scope.entriesDate = $scope.entriesDate.add({days: 1});
-      $location.search('date', $scope.entriesDate.toString('dd.MM.yyyy'));
+    $scope.entriesDate = $scope.entriesDate.add({days: 1});
+    $location.search('date', $scope.entriesDate.toString('dd.MM.yyyy'));
     
     $scope.getEntries();
   };
@@ -253,12 +333,11 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $time
     $scope.getEntries();
   };
   
-  $scope.openEdit = function(id){
+  $scope.openEdit = function(id, idx){
     $scope.projects = [];
 
     var entry = _.find($scope.entries, function(entry){ return entry.id == id;});
     entry.dirty = true;
-
     $http.get('/api/projects').success(function(data){
       $scope.projects = data.projects;
     });
@@ -292,5 +371,105 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, $time
       $scope.entries.splice(idx, 1);
       $scope.handlerEntriesData();
     });
+  };
+});
+
+App.controller("AddTimeEntryCtrl", function($scope, $dialog, $http, $location, $timeout, entriesData){
+  $scope.showSelect = true;
+  $scope.projects = [];
+  $scope.can_modify = entriesData.getAttrs();
+  $scope.ticketTypes = [
+    {"value": "M0", "desc": "Ticket ID"},
+    {"value": "M1", "desc": "Daily Standup"},
+    {"value": "M2", "desc": "Planning meeting"},
+    {"value": "M3", "desc": "Review meeting"},
+    {"value": "M4", "desc": "Retrospective meeting"}
+  ];
+
+  $http.get('/api/projects').success(function(data){
+    $scope.projects = data.projects;
+  });
+
+  $scope.submit = function(data){
+    // Resolve projec_id
+    var project = _.find($scope.projects, function(project){ return project.value == data.project_id; });
+
+    $http.post("/api/times", {
+      project_id: project.id,
+      ticket_id: data.ticket_id,
+      time: data.time,
+      description: data.time_desc,
+      timer: false,
+      add_to_harvest: false
+    }).success(function(data){
+      entriesData.mergeData(data, true);
+      $scope.reset();
+    });
+  };
+
+  $scope.hideSelect = function() {
+    $scope.showSelect = false;
+  };
+
+  $scope.reset = function() {
+    $scope.data = angular.copy({});
+    $scope.ticket_type = angular.copy('');
+  };
+
+  $scope.reset();
+
+});
+
+App.controller('AddEntryToOneBugsCtrl', function($scope, $http, entriesData){
+  $scope.tasks = [];
+  $scope.isLoading = true;
+
+  $http.get('/api/bugs').success(function(data){
+    _.each(data.bugs, function(task){
+      // reset time
+      task.time = "";
+      $scope.tasks.push(task);
+    });
+    $scope.tasks_backup = angular.copy($scope.tasks);
+    $scope.isLoading = false;
+  });
+
+  $scope.submit = function(data) {
+    a = angular.copy(data);
+    $http.post("/api/times", {
+      project_id: a.project.id,
+      ticket_id: a.id,
+      time: a.time,
+      description: a.desc,
+      timer: false,
+      add_to_harvest: false
+    }).success(function(data){
+      entriesData.mergeData(data, true);
+    });
+    data.time = ''; // reset
+  };
+
+});
+
+App.controller("WrongTimeModalCtrl", function($scope, $dialog){
+  $scope.dateOptions = {
+    changeMonth: true,
+    yearRange: '2000:-0',
+    dateFormat: 'dd.mm.yy',
+  };
+
+  $scope.openModal = function(){
+    var d = $dialog.dialog({
+        resolve: {
+          $callerScope: function() {return $scope}
+        }
+      });
+    d.open('wrong_time_justification.html', 'WrongTime');
+  };
+});
+
+App.controller("WrongTime", function($scope, dialog){
+  $scope.close = function(){
+    dialog.close();
   };
 });

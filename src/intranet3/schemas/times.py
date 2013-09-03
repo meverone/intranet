@@ -12,7 +12,7 @@ class TimeObject(object):
             raise Invalid(node, "Invalid format: float or HH:MM")
 
         if isinstance(cstruct, float):
-            data = cstruct
+            return cstruct
 
         if isinstance(cstruct, basestring) and cstruct.count(':'):
             try:
@@ -31,11 +31,10 @@ class TimeObject(object):
 
                 data = h + (float(min) / 60.0)
 
+            return data
+
         if not isinstance(cstruct, float): # "3.5"
             data = cstruct.replace(',', '.')
-
-        if not isinstance(data, float):
-            data = data.replace(',', '.')
             try:
                 data = float(data)
             except ValueError:

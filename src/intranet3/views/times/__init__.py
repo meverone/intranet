@@ -45,24 +45,9 @@ class GetTimeEntriesMixin(object):
 @view_config(route_name='times_list', permission='freelancer')
 class List(GetTimeEntriesMixin, BaseView):
     def get(self):
-        date_str = self.request.GET.get('date')
-        date = datetime.datetime.strptime(date_str, '%d.%m.%Y')
-
-        entries = self._get_time_entries(date)
-
-        form = TimeEntryForm()
-
-        needs_justification = False
-        for tracker, timeentry in entries:
-            if timeentry.modified_ts.date() > timeentry.date:
-                needs_justification = True
-
         return dict(
-            date=date, entries=entries, form=form,
             user=self.request.user,
-            needs_justification=needs_justification,
-            justification_status=excuses.wrongtime_status(date, self.request.user.id),
-            can_modify=user_can_modify_timeentry(self.request.user, date),
+            justification_status=excuses.wrongtime_status(datetime.date.today(), self.request.user.id),
         )
 
 @view_config(route_name='times_list_user')

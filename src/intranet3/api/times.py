@@ -105,8 +105,14 @@ class TimeCollection(GetTimeEntriesMixin, ApiView):
             frozen = bool(data.get('start_timer'))
         )
         self.session.add(time)
+        self.session.flush()
 
-        return HTTPCreated('OK')
+        tracker = Tracker.query.get(time.project.tracker_id)
+        timeEntry = time.to_dict()
+        timeEntry.update({
+            'tracker_url': tracker.get_bug_url(time.ticket_id),
+        })
+        return timeEntry
 
 
 @view_config(route_name='api_time', renderer='json', permission='freelancer')

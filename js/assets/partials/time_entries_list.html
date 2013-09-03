@@ -9,21 +9,18 @@
     <li><input type="hidden" ng-model="modelDate" ui-date="dateOptions" ng-change="changeDateHandler(modelDate)" ui-date-format="dd.mm.yy" /></li>
     <li><a ng-click="nextDate()">Next day</a></li>
 </ul>
-
-<div class="float_left btn_margin_top frame_times justification-info">
-    <a ng-show="needs_justification" class="button a_popup btn btn-warning" href="">Explain this</a>
+<div class="float_left btn_margin_top frame_times justification-info" ng-controller="WrongTimeModalCtrl">
+    <a ng-show="needs_justification" ng-click="openModal()" class="button btn btn-warning">Explain this</a>
 </div>
-
 <table id="time_entries" class="sort-time-entries-table table table-bordered table-hover">
     <thead>
-        <tr>
+        <tr class="parent">
             <th>Project</th>
             <th>Time</th>
             <th>Ticket</th>
             <th>Description</th>
             <th>Added</th>
             <th>Modified</th>
-            <th ng-show="can_modify">SK</th>
             <th ng-show="can_modify">Actions</th>
         </tr>
     </thead>
@@ -34,7 +31,7 @@
         </tr>
     </tfoot>
     <tbody>
-        <tr ng-repeat="entry in entries" ng-class="{delete: entry.deleted}">
+        <tr class="parent" ng-repeat="entry in entries" ng-class="{delete: entry.deleted}">
             <td>
                 <div ng-show="!entry.dirty">{{ entry.project.client_name }} / {{ entry.project.project_name }}</div>
                 <div ng-show="entry.dirty">
@@ -51,9 +48,9 @@
                     </a>
                 </div>
                 <div ng-show="entry.dirty">
-                    <input name="time" type="text" ng-model="entry.ticket_id" style="width: 100px;">
-                    <select ng:model="ticket_type"\
-                            ng-options="option.value as option.desc for option in ticketTypes"></select>
+                    <input class="ticket_id" name="time" type="text" ng-model="entry.ticket_id" style="width: 100px;">
+                    <select name="ticket_type" ng-model="entry.ticket_type" data-id="{{ entry.id }}" class="ticket_type"
+                            ng-options="option.value as option.desc for option in ticketTypes" watchchanges></select>
                 </div>
             </td>
             <td>
@@ -66,14 +63,13 @@
                     {{ entry.desc }}
                 </div>
                 <div ng-show="entry.dirty">
-                    <textarea name="desc" ng-model="entry.desc"></textarea>
+                    <textarea class="ticket_desc" name="desc" ng-model="entry.desc"></textarea>
                 </div>
             </td>
             <td>{{ entry.added }}</td>
             <td>{{ entry.modified }}</td>
-            <td ng-show="can_modify && !entry.deleted" class="superkurazu"></td>
             <td ng-show="can_modify && !entry.deleted" class="box_times_buttons">
-                <a ng-show="!entry.dirty" ng-click="openEdit(entry.id)" class="button btn btn-success">Edit</a>
+                <a ng-show="!entry.dirty" ng-click="openEdit(entry.id, $index)" class="button btn btn-success">Edit</a>
                 <a ng-show="!entry.dirty" ng-click="delete($index)" href="" class="button btn btn-danger">Delete</a>
                 <button ng-show="entry.dirty" class="btn btn-primary" ng-click="submitEdit(entry.id)" type="submit" >Submit</button>
                 <button ng-show="entry.dirty" class="btn btn-default" ng-click="closeEdit(entry.id)" type="submit">Cancel</button>

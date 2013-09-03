@@ -1,0 +1,28 @@
+<table class="table table-bordered table-hover">
+    <thead>
+    <tr>
+        <th>Project</th>
+        <th>Time</th>
+        <th>Ticket</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr class="to_sync" ng-repeat="task in tasks">
+            <td class="project-name">{{ task.project.client_name }} / {{ task.project.name }}</td>
+            <td class="field_time"><input class="to_sync_1" name="time" ng-model="task.time" value="" type="text" class="time_entry_time"/></td>
+            <td class="ticket">#{{ task.id }}</td>
+            <td><textarea class="to_sync_2" name="description" class="time_entry_description">{{ task.desc }}</textarea></td>
+            <td>
+                <input name="project_id" ng-model="task.project.id" value="{{ task.project.id }}" type="hidden" />
+                <input name="ticket_id" value="bug_id" ng-mode="task.id" type="hidden" />
+
+                <input class="to_sync_1" name="time" ng-model="task.time" value="" class="time_entry_time" type="hidden"/>
+                <textarea class="to_sync_2" name="description" ng-model="task.desc" class="time_entry_description" style="display:none">{{ task.desc }}</textarea>
+
+                <input type="submit" value="Add" ng-click="submit(task)" class="button btn btn-primary" id="add_time_entry"/>
+            </td>
+        </tr>
+    </tbody>
+</table>

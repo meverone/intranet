@@ -1,0 +1,54 @@
+<form class="parent add-time-form" name="AddForm" accept-charset="utf-8">
+    <div class="project-selector">
+        <div>
+            <dl>
+                <dt><label for="project_id">Project</label></dt>
+                <dd>
+                    <div class="description">Project</div>
+                    <select id="project_id" 
+                            name="project_id"
+                            ng-show="!showSelect"
+                            ng-model="data.project_id"
+                            ng-options="option.value as option.value for option in projects" required></select>
+                    <div class="input-append" ng-show="showSelect">
+                        <input type="text" autocomplete="off" style="width: 147px;" ng-model="data.project_id" typeahead="project.value for project in projects | filter:$viewValue | limitTo:8"required>
+                        <button class="btn" type="button" ng-click="hideSelect()">Show all</button>
+                    </div>     
+                </dd>
+            </dl>
+        </div>
+    </div>
+    <div>
+        <dl>
+            <dt><label for="time">Time</label></dt>
+            <dd>
+                <div class="description">Time as a float value or hh:mm</div>
+                <input class="time_entry_time" ng-model="data.time" id="time" name="time" type="text" required>
+            </dd>
+        </dl>
+    </div>
+    <div>
+        <dl>
+            <dt><label for="ticket_id">Ticket #</label></dt>
+            <dd>
+                <div class="description">Ticket identifier on the tracker or predefined one</div>
+                <input id="ticket_id" class="ticket_id" ng-model="data.ticket_id" name="ticket_id" type="text" value="">
+                <select ng-model="ticket_type" style="width: 141px;"
+                        ng-options="option.value as option.desc for option in ticketTypes" watchchanges required></select>
+            </dd>
+        </dl>
+    </div>
+    <div>
+        <dl>
+            <dt><label for="description">Description</label></dt>
+            <dd>
+                
+                <div class="description">Time entry description</div>
+                <textarea class="ticket_desc time_entry_description" ng-model="data.time_desc" id="description" name="description" required></textarea>
+            </dd>
+        </dl>
+    </div>
+    <div class="buttons">
+        <input type="submit" ng-click="submit(data)" value="Add" class="button btn btn-primary"/>
+    </div>
+</form>
