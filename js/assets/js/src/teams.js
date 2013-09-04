@@ -161,38 +161,38 @@ App.filter('format_time', function () {
 });
 
 App.directive('watchchanges', function() {
-    return function (scope, element, attrs) {
-      var parent = element.closest('.parent');
-      var ticket_id = parent.find('.ticket_id');
-      var ticket_desc = parent.find('.ticket_desc');
+  return function (scope, element, attrs) {
+    var parent = element.closest('.parent');
+    var ticket_id = parent.find('.ticket_id');
+    var ticket_desc = parent.find('.ticket_desc');
 
-      element.on('change', function(){
-        var type = scope.ticketTypes[element.val()];
+    element.on('change', function(){
+      var type = scope.ticketTypes[element.val()];
 
-        if(type.value !== "M0"){
-            ticket_id.val(type.value);
-            ticket_id.prop('readonly', true);
-            ticket_desc.val(type.desc);
-        } else {
-            ticket_id.val('');
-            ticket_id.prop('readonly', false);
-            ticket_desc.val('');
+      if(type.value !== "M0"){
+          ticket_id.val(type.value);
+          ticket_id.prop('readonly', true);
+          ticket_desc.val(type.desc);
+      } else {
+          ticket_id.val('');
+          ticket_id.prop('readonly', false);
+          ticket_desc.val('');
+      }
+
+      // Angular should know about changes
+      scope.$apply(function () {
+        if( attrs.id ) {
+          var entry = _.find(scope.entries, function(entry){ return entry.id == attrs.id;});
+          entry.ticket_id = ticket_id.val();
+          entry.desc = ticket_desc.val();
+        }else {
+          scope.data.ticket_id = ticket_id.val();
+          scope.data.time_desc = ticket_desc.val();
         }
-
-        // Angular should know about changes
-        scope.$apply(function () {
-          if( attrs.id ) {
-            var entry = _.find(scope.entries, function(entry){ return entry.id == attrs.id;});
-            entry.ticket_id = ticket_id.val();
-            entry.desc = ticket_desc.val();
-          }else {
-            scope.data.ticket_id = ticket_id.val();
-            scope.data.time_desc = ticket_desc.val();
-          }
-        });
       });
-    };
-  });
+    });
+  };
+});
 
 App.factory('entriesData', function($rootScope){
   data = [];
@@ -251,7 +251,9 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, entri
   $scope.total_time = 0;
   $scope.entriesDate = new Date();
   $scope.needs_justification = false;
+  $scope.justification_status = null;
   $scope.can_modify = true;
+  
   $scope.dateOptions = {
       changeMonth: true,
       yearRange: '2000:-0',
@@ -260,6 +262,7 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, entri
       buttonImageOnly: true,
       buttonImage: "/static/img/calendar.gif",
   };
+
   $scope.ticketTypes = [
     {"value": "M0", "desc": "Ticket ID"},
     {"value": "M1", "desc": "Daily Standup"},
@@ -280,7 +283,11 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, entri
   $scope.modelDate = $scope.entriesDate.toString("dd.MM.yyyy");
 
   $scope.getEntries = function() {
+    // Restart data
+    $scope.needs_justification = false;
+    $scope.justification_status = null;
     entriesData.reset();
+
     $http.get('/api/times?date=' + $scope.entriesDate._toISOString()).success(function(data){
       $scope.can_modify = data.can_modify;
       $scope.entries = data.entries;
@@ -292,6 +299,11 @@ App.controller("TimeListCtrl", function($scope, $dialog, $http, $location, entri
       });
       entriesData.mergeAttrs({can_modify: data.can_modify});
     });
+
+    $http.get('/api/excuse?date=' + $scope.entriesDate._toISOString()).success(function(date){
+      $scope.justification_status = date.justification_status;
+    });
+
   };
   $scope.getEntries($scope.entriesDate);
  
@@ -449,27 +461,4 @@ App.controller('AddEntryToOneBugsCtrl', function($scope, $http, entriesData){
     data.time = ''; // reset
   };
 
-});
-
-App.controller("WrongTimeModalCtrl", function($scope, $dialog){
-  $scope.dateOptions = {
-    changeMonth: true,
-    yearRange: '2000:-0',
-    dateFormat: 'dd.mm.yy',
-  };
-
-  $scope.openModal = function(){
-    var d = $dialog.dialog({
-        resolve: {
-          $callerScope: function() {return $scope}
-        }
-      });
-    d.open('wrong_time_justification.html', 'WrongTime');
-  };
-});
-
-App.controller("WrongTime", function($scope, dialog){
-  $scope.close = function(){
-    dialog.close();
-  };
 });

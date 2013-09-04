@@ -9,8 +9,11 @@
     <li><input type="hidden" ng-model="modelDate" ui-date="dateOptions" ng-change="changeDateHandler(modelDate)" ui-date-format="dd.mm.yy" /></li>
     <li><a ng-click="nextDate()">Next day</a></li>
 </ul>
-<div class="float_left btn_margin_top frame_times justification-info" ng-controller="WrongTimeModalCtrl">
-    <a ng-show="needs_justification" ng-click="openModal()" class="button btn btn-warning">Explain this</a>
+<div ng-show="isSameUser" class="float_left btn_margin_top frame_times justification-info">
+    <a ng-show="needs_justification && justification_status==null" href="/employees/form/wrong_time_justification?popup_date={{ entriesDate | date:'dd/MM/yyyy' }}" class="a_popup button btn btn-warning" target="_self">Explain this</a> 
+    <span ng-show="needs_justification && justification_status==1" class="label label-success">Explained</span>
+    <span ng-show="needs_justification && justification_status==0" class="label">Waits for verification</span>
+    <span ng-show="needs_justification && justification_status==-1" class="label label-important">Not explained</span>
 </div>
 <table id="time_entries" class="sort-time-entries-table table table-bordered table-hover">
     <thead>

@@ -47,7 +47,6 @@ class List(GetTimeEntriesMixin, BaseView):
     def get(self):
         return dict(
             user=self.request.user,
-            justification_status=excuses.wrongtime_status(datetime.date.today(), self.request.user.id),
         )
 
 @view_config(route_name='times_list_user')

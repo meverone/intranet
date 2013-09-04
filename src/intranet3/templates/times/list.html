@@ -4,19 +4,7 @@
 <div ng-app="intranet">
     <div ng-controller="TimeListCtrl">
         {% if user.id == request.user.id %}
-        <!--
-        <div class="float_left btn_margin_top frame_times justification-info">
-            {% if justification_status == None %}
-                <a class="button a_popup btn btn-warning" href="{{ request.url_for('/employees/form/wrong_time_justification') }}?popup_date=data">{% trans %}Explain this{% endtrans %}</a>
-            {% elif justification_status == 1 %}
-                <span class="label label-success">{% trans %}Explained{% endtrans %}</span>
-            {% elif justification_status == 0 %}
-                <span class="label">{% trans %}Waits for verification{% endtrans %}</span>
-            {% elif justification_status == -1 %}
-                <span class="label label-important">{% trans %}Not explained{% endtrans %}</span>
-            {% endif %}
-        </div>
-        -->
+            <div ng-init="isSameUser=true;"></div>
         {% endif %}
         <div ng-include="src='time_entries_list.html'"></div>
     </div>
