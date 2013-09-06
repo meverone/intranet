@@ -34,7 +34,11 @@ missing_hours_notification = URLCronTask(
     u'Missing hours notification',
     '/cron/remind/missing_hours',
 )
-mailer = MailCheckerTask()
+#mailer = MailCheckerTask()
+mailer = URLCronTask(
+    u"Mail Checker Task",
+    '/cron/mail/sync',
+)
 
 ## Reports
 report_with_today_hours = URLCronTask(
